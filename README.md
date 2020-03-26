@@ -6,7 +6,7 @@ A imagem roda Apache/2.4.29 e PHP 7.4.4, bem como todos os módulos e extensões
 ### Como usar:
 
 1. Instale o [Docker](https://www.docker.com/products/docker-desktop);
-2. Execute o comando: $ `docker run -dit -p 80:80 -v /path/of/your/project:/var/www/html soluzionetecnologia/adianti-gabarito`
+2. Execute o comando: $ `docker run -d -p 80:80 -v /path/of/your/project:/var/www/html soluzionetecnologia/adianti-gabarito:latest`
 3. Acesse [http://localhost](http://localhost)
 
 *Substitua `/path/of/your/project` pelo caminho do seu projeto no host.
