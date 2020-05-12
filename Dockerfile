@@ -55,6 +55,10 @@ RUN apt-get update \
        php7.4-xsl \
        php7.4-yaml \
        php7.4-zmq \
+       php7.4-dev \
+       php-pear \
+       build-essential \
+       libaio1 \
        composer
 
 # Install PHP databases extensions
@@ -110,6 +114,36 @@ RUN echo "\n# Security settings"                    >> /etc/php/7.4/apache2/php.
 # Link log and error files to stdout
 RUN ln -sf /dev/stdout /var/log/apache2/access.log \
     && ln -sf /dev/stderr /var/log/apache2/error.log
+
+# Install OCI8 and PDO_OCI libs
+COPY *.zip /root/
+
+RUN mkdir -p /opt/oracle \
+    && cd /opt/oracle \
+    && mv /root/instantclient-*.zip . \
+    && find . -name "*.zip" -exec unzip {} \; \
+    && rm *.zip \
+    && echo /opt/oracle/instantclient_19_6 > /etc/ld.so.conf.d/oracle-instantclient \
+    && ldconfig \
+    && pecl channel-update pecl.php.net \
+    && sh -c "echo 'instantclient,/opt/oracle/instantclient_19_6' | pecl install oci8" \
+    && echo "extension=oci8.so" >> /etc/php/7.4/cli/php.ini \
+    && echo "extension=oci8.so" >> /etc/php/7.4/apache2/php.ini \
+    && echo "export LD_LIBRARY_PATH=/opt/oracle/instantclient_19_6" >> /etc/apache2/envvars \
+    && echo "export ORACLE_HOME=/opt/oracle/instantclient_19_6" >> /etc/apache2/envvars \
+    && echo "LD_LIBRARY_PATH=/opt/oracle/instantclient_19_6:$LD_LIBRARY_PATH" >> /etc/environment \
+    && cd /root \
+    && unzip *.zip \
+    && rm -f *.zip \
+    && cd php-src-php-7.4.5/ext/pdo_oci \
+    && phpize \
+    && ./configure --with-pdo-oci=instantclient,/opt/oracle/instantclient_19_6,19.6 \
+    && make install \
+    && cd .. \
+    && rm -Rf php-src-php-7.4.5 \
+    && echo "extension=pdo_oci.so" >> /etc/php/7.4/mods-available/pdo_oci.ini \
+    && cd /etc/php/7.4/apache2/conf.d \
+    && ln -s /etc/php/7.4/mods-available/pdo_oci.ini pdo_oci.ini
 
 # Defines directories that can be mapped
 VOLUME ["/var/www/html", "/tmp", "/var/log/apache2", "/etc/apache2"]
