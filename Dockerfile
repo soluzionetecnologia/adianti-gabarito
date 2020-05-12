@@ -132,7 +132,7 @@ RUN mkdir -p /opt/oracle \
     && echo "export ORACLE_HOME=/opt/oracle/instantclient_19_6" >> /etc/apache2/envvars \
     && echo "LD_LIBRARY_PATH=/opt/oracle/instantclient_19_6:$LD_LIBRARY_PATH" >> /etc/environment \
     && cd /root \
-    && wget https://codeload.github.com/php/php-src/zip/php-7.4.5 \
+    && wget https://github.com/php/php-src/archive/php-7.4.5.zip \
     && unzip *.zip \
     && rm -f *.zip \
     && cd php-src-php-7.4.5/ext/pdo_oci \
