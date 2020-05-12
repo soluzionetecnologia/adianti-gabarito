@@ -115,12 +115,11 @@ RUN echo "\n# Security settings"                    >> /etc/php/7.4/apache2/php.
 RUN ln -sf /dev/stdout /var/log/apache2/access.log \
     && ln -sf /dev/stderr /var/log/apache2/error.log
 
-# Install OCI8 and PDO_OCI libs
-COPY *.zip /root/
-
+# Install Oracle client, OCI8 and PDO_OCI libs
 RUN mkdir -p /opt/oracle \
     && cd /opt/oracle \
-    && mv /root/instantclient-*.zip . \
+    && wget https://download.oracle.com/otn_software/linux/instantclient/19600/instantclient-basic-linux.x64-19.6.0.0.0dbru.zip \
+    && wget https://download.oracle.com/otn_software/linux/instantclient/19600/instantclient-sdk-linux.x64-19.6.0.0.0dbru.zip \
     && find . -name "*.zip" -exec unzip {} \; \
     && rm *.zip \
     && echo /opt/oracle/instantclient_19_6 > /etc/ld.so.conf.d/oracle-instantclient \
@@ -133,13 +132,14 @@ RUN mkdir -p /opt/oracle \
     && echo "export ORACLE_HOME=/opt/oracle/instantclient_19_6" >> /etc/apache2/envvars \
     && echo "LD_LIBRARY_PATH=/opt/oracle/instantclient_19_6:$LD_LIBRARY_PATH" >> /etc/environment \
     && cd /root \
+    && wget https://codeload.github.com/php/php-src/zip/php-7.4.5 \
     && unzip *.zip \
     && rm -f *.zip \
     && cd php-src-php-7.4.5/ext/pdo_oci \
     && phpize \
     && ./configure --with-pdo-oci=instantclient,/opt/oracle/instantclient_19_6,19.6 \
     && make install \
-    && cd .. \
+    && cd /root \
     && rm -Rf php-src-php-7.4.5 \
     && echo "extension=pdo_oci.so" >> /etc/php/7.4/mods-available/pdo_oci.ini \
     && cd /etc/php/7.4/apache2/conf.d \
